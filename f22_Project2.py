@@ -25,8 +25,40 @@ def get_listings_from_search_results(html_file):
         ('Loft in Mission District', 210, '1944564'),  # example
     ]
     """
-    pass
+    file = open(html_file, 'r')
+    soup = BeautifulSoup(file, 'html.parser')
+    file.close()
+    div_tags = soup.find_all('div', class_ = 't1jojoys')
+    titles = []
+    count = 0
+    while count < len(div_tags):
+        titles.append(div_tags[count].text.strip())
+        count += 1
+    #print(titles)
 
+    id_list = []
+    for i in div_tags:
+        ids = i.get('id', None)
+        #print(ids)
+        new = ids.split('_')
+        #print(new)
+        id_list.append(new[1])
+    #print(id_list)
+
+    price_tags = soup.find_all('span', class_ = "_tyxjp1")
+    price_list = []
+    for price in price_tags:
+        price_list.append(int(price.text.strip("$")))
+    #print(price_list)
+
+    tuple = (titles, price, id_list)
+    new_list = []
+    for i in range(len(titles)):
+        new_list.append((titles[i], price_list[i], id_list[i]))
+    return new_list
+
+
+get_listings_from_search_results("html_files/mission_district_search_results.html")
 
 def get_listing_information(listing_id):
     """
@@ -52,6 +84,48 @@ def get_listing_information(listing_id):
         number of bedrooms
     )
     """
+    #get_listings_from_search_results(html_file)
+    files = "html_files/listing_" + listing_id + ".html"
+    f_hand = open(files, "r")
+    files_hand = f_hand.read()
+    soup = BeautifulSoup(files_hand, 'html.parser')
+    f_hand.close()
+
+    policynumber = soup.find('li', class_ = "f19phm7j dir dir-ltr").span.text
+    policynumber = policynumber.strip("Policy number: ")
+    strlistp = ['Pending', 'pending', 'Pending Application', 'City registration']
+    strliste = ['License not needed per OSTR', 'Exempt', 'exempt']
+    if policynumber in strlistp:
+        policynumber = "Pending"
+    elif policynumber in strliste:
+        policynumber = "Exempt"
+    else:
+        policynumber = policynumber
+    # print(len(policynumber))
+
+    placetype = soup.find_all('h2', class_ = '_14i3z6h')
+    strlista = ['Private Room', 'Shared Room']
+    strlistb = ['Private', 'Shared']
+    if placetype in strlista:
+        placetype = 'Private'
+    if placetype in strlistb:
+        placetype = 'Shared'
+    else:
+        placetype = 'Entire Room'
+    # print(len(placetype))
+
+    bedroomnum = soup.find_all('li', class_ = "l7n4lsf dir dir-ltr")[1].find_all('span')[2].text
+    bedroomnum = bedroomnum.split(" ")[0]
+    if "studio" in bedroomnum.lower():
+        bedroomnum = 1
+
+   #  print(bedroomnum)
+
+    
+
+    tuple = (policynumber, placetype, int(bedroomnum))
+    # print(tuple)
+    return tuple
     pass
 
 
@@ -69,6 +143,13 @@ def get_detailed_listing_database(html_file):
         ...
     ]
     """
+    first = get_listings_from_search_results(html_file)
+    list = []
+    for f in first:
+        second = get_listing_information(f[2])
+        list.append(f + second)
+    # print(list)
+    return list
     pass
 
 
@@ -94,6 +175,14 @@ def write_csv(data, filename):
 
     This function should not return anything.
     """
+    data_name = sorted(data, key = lambda x:x[1])
+    f = open(filename, "w")
+    csv1 = csv.writer(f)
+    header = ["Listing Title","Cost","Listing ID","Policy Number","Place Type","Number of Bedrooms"]
+    csv1.writerow(header)
+    for data1 in data_name:
+        csv1.writerow(data1)
+    f.close()
     pass
 
 
@@ -243,3 +332,4 @@ if __name__ == '__main__':
     write_csv(database, "airbnb_dataset.csv")
     check_policy_numbers(database)
     unittest.main(verbosity=2)
+    get_listings_from_search_results("html_files/mission_district_search_results.html")
