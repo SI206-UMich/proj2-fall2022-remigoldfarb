@@ -205,6 +205,14 @@ def check_policy_numbers(data):
     ]
 
     """
+    regex1 = "r(20\d{2}-00\d{4}STR)|(STR-000\d{4})|(Pending)|(Exempt)"
+    invalid = []
+    for row in data:
+        policynumber1 = row[3]
+        if re.match(regex1, policynumber1) == False:
+            listing_id = row[2]
+            invalid.append(listing_id)
+    return invalid
     pass
 
 
@@ -236,9 +244,9 @@ class TestCases(unittest.TestCase):
         # check that the variable you saved after calling the function is a list
         self.assertEqual(type(listings), list)
         # check that each item in the list is a tuple
-
+        self.assertEqual(type(listings[0]), tuple)
         # check that the first title, cost, and listing id tuple is correct (open the search results html and find it)
-
+        
         # check that the last title is correct (open the search results html and find it)
         pass
 
@@ -280,10 +288,11 @@ class TestCases(unittest.TestCase):
             # assert each item in the list of listings is a tuple
             self.assertEqual(type(item), tuple)
             # check that each tuple has a length of 6
+            self.assertEqual(len(item), 6)
 
         # check that the first tuple is made up of the following:
         # 'Loft in Mission District', 210, '1944564', '2022-004088STR', 'Entire Room', 1
-
+        self.assertEqual()
         # check that the last tuple is made up of the following:
         # 'Guest suite in Mission District', 238, '32871760', 'STR-0004707', 'Entire Room', 1
 
