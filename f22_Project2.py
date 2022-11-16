@@ -233,7 +233,9 @@ def extra_credit(listing_id):
         reviews_dict[year] = reviews_dict.get(year, 0) + 1
         if reviews_dict[year] > 90:
             return False
+    print(reviews_dict)
     return True
+    
 
 
 class TestCases(unittest.TestCase):
